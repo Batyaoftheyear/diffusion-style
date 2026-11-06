@@ -9,6 +9,7 @@ from .data import validate_dataset
 from .inference import complete_records, current_run
 from .io import environment, file_sha, read_json, read_jsonl, write_csv, write_json
 from .preprocessing import canny_map, load_rgb
+from .run_status import verified_outcomes
 
 
 def edge_metrics(source, generated, tolerance=2):
@@ -75,12 +76,11 @@ def evaluate(c):
     inputs = data_dir(c)
     photos = read_jsonl(inputs / "coco_manifest.jsonl")
     records = complete_records(root, photos, run["run_id"])
-    if len(records) != 24 or not run.get("complete"):
-        raise ValueError("Evaluation requires a complete 24-image baseline")
+    skipped, outcomes_id = verified_outcomes(root, run, photos, records)
     env = environment(include_gpu=True)
     identity = {"run_id": run["run_id"], "model": c["models"]["dino"], "metrics": c["metrics"],
                 "method": "DINOv2 last_hidden_state CLS, float32, L2 normalization, processor use_fast=False; edge many-to-many Chebyshev tolerance",
-                "environment": env, "metrics_code_sha": file_sha(__file__)}
+                "environment": env, "metrics_code_sha": file_sha(__file__), "outcomes_id": outcomes_id}
     evaluation_id = fingerprint(identity)[:20]
     metric_root = root / "evaluation" / evaluation_id
     if (metric_root / "protocol.json").exists():
@@ -111,7 +111,8 @@ def evaluate(c):
         rows.append(row)
         print(f"Evaluated {row['photo_id']}", flush=True)
     summary = dict(run_id=run["run_id"], evaluation_id=evaluation_id, n=len(rows), metrics=summarize(rows),
-                   std_ddof=1, scope="Between-image variation at one shared seed, not noise robustness", protocol=identity)
+                   expected_images=len(photos), skipped=[{"photo_id": row["photo_id"], "reason": row["reason"]} for row in skipped],
+                   outcomes_id=outcomes_id, std_ddof=1, scope="Between-image variation at one shared seed, not noise robustness", protocol=identity)
     write_csv(metric_root / "metrics.csv", rows)
     write_json(metric_root / "summary.json", summary)
     write_csv(root / "metrics.csv", rows)

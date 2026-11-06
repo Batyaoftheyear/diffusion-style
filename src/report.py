@@ -11,6 +11,7 @@ from .data import validate_dataset
 from .inference import complete_records, current_run
 from .io import file_sha, read_json, read_jsonl, write_json
 from .metrics import summarize
+from .run_status import verified_outcomes
 
 
 def register_fonts():
@@ -51,13 +52,15 @@ def checked_materials(c, draft):
     records = complete_records(root, photos, run["run_id"])
     if draft:
         return root, run, records, None
-    if len(records) != 24 or not run.get("complete"):
-        raise ValueError("Final report requires 24 checked PNGs and latent files")
+    skipped, outcomes_id = verified_outcomes(root, run, photos, records)
     summary = read_json(root / "summary.json")
     with (root / "metrics.csv").open(encoding="utf-8-sig", newline="") as stream:
         metrics = list(csv.DictReader(stream))
-    if summary["run_id"] != run["run_id"] or summary["n"] != 24 or len(metrics) != 24:
-        raise ValueError("Metrics are not from this complete baseline")
+    if summary["run_id"] != run["run_id"] or summary["n"] != len(records) or len(metrics) != len(records) or summary.get("outcomes_id") != outcomes_id:
+        raise ValueError("Metrics are not from these checked results and recorded skips")
+    expected_skips = [{"photo_id": row["photo_id"], "reason": row["reason"]} for row in skipped]
+    if summary.get("skipped", []) != expected_skips or summary.get("expected_images", len(photos)) != len(photos):
+        raise ValueError("Summary skip population differs from the recorded run outcomes")
     outputs = {row["photo_id"]: row["output_sha256"] for row in records}
     if {row["photo_id"] for row in metrics} != set(outputs):
         raise ValueError("Metric/photo IDs differ")
@@ -172,11 +175,16 @@ def build_report(c, draft=False, render=False):
                   "Реальный GPU-прогон ещё не выполнен. Этот документ является незавершённым черновиком.")
     if draft:
         run_status += " Документ собран в режиме --draft и не готов к сдаче."
+    if run and run.get("skips"):
+        skipped_rows = [read_json(safe_path(root, item["annotation"])) for item in run["skips"]]
+        details = "; ".join(f"{row['photo_id']}: {row['reason']}" for row in skipped_rows)
+        figures.append(Paragraph(inline(f"Пропущено изображений: {len(skipped_rows)}. {details}. Метрики рассчитаны только по проверенным успешным результатам; исходная выборка из 24 фото сохранена."), styles["caption"]))
     blocks = {"{{CONFIG_TABLE}}": [table(config_rows, [width * .56, width * .44]), Spacer(1, 8)],
               "{{METRICS_TABLE}}": metrics_block, "{{FIGURES}}": figures,
               "{{PIPELINE}}": [pipeline_drawing(), Paragraph("Рис. 1. Пайплайн baseline. В будущем IP-Adapter заменяется на LoRA в UNet; ControlNet и остальные условия сохраняются.", styles["caption"])]}
     substitutions = {"{{DATA_STATUS}}": data_status, "{{RUN_STATUS}}": run_status,
-                     "{{EDGE_TOLERANCE}}": str(c["metrics"]["edge_tolerance_px"])}
+                     "{{EDGE_TOLERANCE}}": str(c["metrics"]["edge_tolerance_px"]),
+                     "{{EVALUATION_STATUS}}": (f"Фактически оценено {summary['n']} из 24; явно пропущено {len(summary.get('skipped', []))}." if summary else "Фактические метрики ещё не получены.")}
     source = (REPO_ROOT / "docs/stage1_report.md").read_text(encoding="utf-8")
     for token, value in substitutions.items():
         source = source.replace(token, value)

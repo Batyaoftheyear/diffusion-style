@@ -237,6 +237,70 @@ class ManifestTests(unittest.TestCase):
         finally:
             atomic_write(path, original)
 
+    def make_saved_run_fixture(self, count=23):
+        run_id = "unit_test_" + self._testMethodName
+        root = Path(self.temporary.name) / "results" / run_id
+        save_latents(root / "noise.npy", make_latents(42))
+        for photo in self.photos[:count]:
+            path = root / "images" / f"{photo['id']}.png"
+            atomic_write(path, (self.root / photo["prepared"]).read_bytes())
+            row = {"photo_id": photo["id"], "run_id": run_id, "output": path.relative_to(root).as_posix(),
+                   "latents": "noise.npy", "output_sha256": file_sha(path), "latents_sha256": file_sha(root / "noise.npy"),
+                   "reference_id": self.art[0]["id"], "prompt": "Synthetic CPU unit-test fixture", "negative_prompt": "",
+                   "seed": 42, "generation_seconds": 0.1, "peak_allocated_mib": 1.0, "peak_reserved_mib": 1.0}
+            write_json(root / "metadata" / f"{photo['id']}.json", row)
+        run = {"run_id": run_id, "config": self.config, "data_identity": data_identity(self.config),
+               "generation_code_sha": generation_code_sha(), "main_reference_id": self.art[0]["id"],
+               "expected_images": 24, "completed_images": 2, "complete": False}
+        write_json(root / "run.json", run)
+        write_json(Path(self.temporary.name) / "results/current_run.json", {"run_id": run_id})
+        return root
+
+    def test_finalize_skip_preserves_saved_images_and_run_id(self):
+        from src.inference import complete_records
+        from src.run_status import finalize_run, reuse_finalized_run, verified_outcomes
+        root = self.make_saved_run_fixture()
+        before = {path: file_sha(path) for path in list((root / "images").glob("*.png")) + [root / "noise.npy"]}
+        old_run_id = read_json(root / "run.json")["run_id"]
+        self.assertEqual(finalize_run(self.config, [self.photos[-1]["id"]], "safety_checker"), root)
+        run = read_json(root / "run.json")
+        self.assertEqual(run["run_id"], old_run_id)
+        self.assertEqual((run["completed_images"], run["skipped_images"], run["processed_images"]), (23, 1, 24))
+        self.assertFalse(run["complete"])
+        self.assertTrue(run["processed_complete"])
+        self.assertTrue(all(file_sha(path) == sha for path, sha in before.items()))
+        records = complete_records(root, self.photos, old_run_id)
+        skipped, identity = verified_outcomes(root, run, self.photos, records)
+        self.assertEqual(len(skipped), 1)
+        self.assertEqual(identity, run["outcomes_id"])
+        self.assertTrue(reuse_finalized_run(self.config))
+        self.assertEqual(finalize_run(self.config, [self.photos[-1]["id"]], "safety_checker"), root)
+
+    def test_unexplained_missing_photo_cannot_finalize(self):
+        from src.run_status import finalize_run
+        root = self.make_saved_run_fixture()
+        before = (root / "run.json").read_bytes()
+        with self.assertRaises(ValueError):
+            finalize_run(self.config)
+        self.assertEqual((root / "run.json").read_bytes(), before)
+
+    def test_successful_photo_cannot_be_replaced_by_skip(self):
+        from src.run_status import finalize_run
+        self.make_saved_run_fixture()
+        with self.assertRaises(ValueError):
+            finalize_run(self.config, [self.photos[0]["id"]], "safety_checker")
+
+    def test_modified_skip_annotation_is_rejected(self):
+        from src.inference import complete_records
+        from src.run_status import finalize_run, verified_outcomes
+        root = self.make_saved_run_fixture()
+        finalize_run(self.config, [self.photos[-1]["id"]], "safety_checker")
+        run = read_json(root / "run.json")
+        path = root / run["skips"][0]["annotation"]
+        atomic_write(path, path.read_bytes() + b"\n")
+        with self.assertRaisesRegex(ValueError, "changed"):
+            verified_outcomes(root, run, self.photos, complete_records(root, self.photos, run["run_id"]))
+
     def test_current_run_rejects_changed_config(self):
         run_id = "synthetic_identity_test"
         run = {"config": self.config, "data_identity": data_identity(self.config), "generation_code_sha": generation_code_sha()}
