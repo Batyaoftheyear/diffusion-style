@@ -249,6 +249,18 @@ class ManifestTests(unittest.TestCase):
 
 
 class NotebookAndReportTests(unittest.TestCase):
+    def test_packaged_report_font_has_cyrillic_without_os_fonts(self):
+        from matplotlib import get_data_path
+        from reportlab.pdfbase import pdfmetrics
+        from src.report import register_fonts
+        with patch.dict(os.environ, {"REPORT_FONT_PATH": ""}):
+            path = register_fonts()
+        self.assertTrue(path.resolve().is_relative_to(Path(get_data_path()).resolve()))
+        for name in ("Body", "BodyBold"):
+            glyphs = pdfmetrics.getFont(name).face.charToGlyph
+            for character in "ПриветЁёжйα":
+                self.assertIn(ord(character), glyphs)
+
     def test_one_notebook_and_valid_python_cells(self):
         notebooks = list(REPO_ROOT.glob("*.ipynb"))
         self.assertEqual([path.name for path in notebooks], ["colab_stage1.ipynb"])

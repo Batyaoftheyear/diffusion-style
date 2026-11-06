@@ -14,17 +14,22 @@ from .metrics import summarize
 
 
 def register_fonts():
+    from matplotlib import get_data_path
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.ttfonts import TTFont
-    candidates = [Path(os.environ.get("REPORT_FONT_PATH", "__not_set__")),
+    # Matplotlib is pinned in requirements and ships these TTF files on all platforms.
+    # Prefer its copy so Colab does not depend on OS font packages.
+    bundled_font = Path(get_data_path()) / "fonts/ttf/DejaVuSans.ttf"
+    candidates = [Path(os.environ.get("REPORT_FONT_PATH", "__not_set__")), bundled_font,
                   Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"), Path("C:/Windows/Fonts/arial.ttf")]
     regular = next((path for path in candidates if path.is_file()), None)
     if regular is None:
-        raise FileNotFoundError("Set REPORT_FONT_PATH to a TrueType font supporting Cyrillic")
+        raise FileNotFoundError("Cyrillic font missing from Matplotlib and OS fonts; reinstall requirements or set REPORT_FONT_PATH")
     bold = regular.with_name("DejaVuSans-Bold.ttf" if regular.name == "DejaVuSans.ttf" else "arialbd.ttf")
     pdfmetrics.registerFont(TTFont("Body", str(regular)))
     pdfmetrics.registerFont(TTFont("BodyBold", str(bold if bold.is_file() else regular)))
     pdfmetrics.registerFontFamily("Body", normal="Body", bold="BodyBold", italic="Body", boldItalic="BodyBold")
+    return regular
 
 
 def inline(text):

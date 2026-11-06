@@ -77,6 +77,10 @@ python scripts/build_report.py --config configs/baseline.yaml --render
 
 Каждый скрипт читает сохранённые данные самостоятельно. Не требуется переносить Python-переменные между процессами или ноутбуками. `--limit 2` — настоящий запуск SD + ControlNet + IP-Adapter, не мок. Успешные изображения smoke test используются основным baseline. Отдельный opt-in тест того же пути: `RUN_GPU_SMOKE=1 python -m unittest discover -s tests -p test_gpu_smoke.py -v` (Linux).
 
+## Если PDF-тест не находит шрифт с кириллицей
+
+Обновите checkout через раздел 3 и повторите ячейку CPU-тестов. Генератор использует DejaVu Sans и Bold из уже установленного Matplotlib, поэтому не зависит от наличия системного пакета шрифтов в Colab. Устанавливать дополнительные пакеты или задавать REPORT_FONT_PATH вручную не требуется. Переменная остаётся доступна для явного выбора своего TTF.
+
 ## Если Colab падает на создании окружения
 
 Обновите notebook и checkout через раздел 3, затем повторите раздел 4. Вызов системного `python -m venv` заменён на автономный [virtualenv](https://virtualenv.pypa.io/en/latest/how-to/install.html#zipapp). Он устанавливает встроенный pip без системного ensurepip и исправляет уже созданное окружение без pip. Bootstrap-архив скачивается с официального GitHub PyPA с проверкой закреплённого SHA-256; системные Python-пакеты не изменяются. Удалять данные из Drive или перезапускать runtime для этого не нужно.
