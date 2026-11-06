@@ -1,12 +1,16 @@
 """Подготовка небольших выборок WikiArt и COCO, кэш и manifests."""
 from collections import Counter
+from datetime import timezone
+from email.utils import parsedate_to_datetime
+from http.client import IncompleteRead
 import io
 import json
 from pathlib import Path
 import re
+import ssl
 import time
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode, urlparse
+from urllib.parse import urlencode, urlparse, urlsplit
 from urllib.request import Request, urlopen
 
 from PIL import Image
@@ -26,9 +30,37 @@ GROUPS = {
 }
 
 
-def fetch(url, max_bytes=32 * 1024 * 1024):
+class DataDownloadError(RuntimeError):
+    """Удалённый источник остался недоступен после ограниченного числа попыток."""
+
+
+def retry_delay(attempt, retry_after=None):
+    delay = min(30.0, 2.0 ** (attempt + 1))
+    if retry_after is not None:
+        try:
+            requested = float(retry_after)
+        except ValueError:
+            try:
+                deadline = parsedate_to_datetime(retry_after)
+                if deadline.tzinfo is None:
+                    deadline = deadline.replace(tzinfo=timezone.utc)
+                requested = deadline.timestamp() - time.time()
+            except (TypeError, ValueError, OverflowError):
+                return delay
+        delay = min(60.0, max(delay, requested))
+    return delay
+
+
+def fetch(url, max_bytes=32 * 1024 * 1024, max_attempts=6):
+    if type(max_attempts) is not int or max_attempts < 1:
+        raise ValueError("max_attempts must be a positive integer")
     request = Request(url, headers={"User-Agent": "diffusion-style-stage1/1.0"})
-    for attempt in range(3):
+    parsed = urlsplit(url)
+    # Do not log signed image URL query parameters.
+    location = (parsed.hostname or "remote source") + parsed.path
+    last_error, reason = None, None
+    for attempt in range(max_attempts):
+        retry_after = None
         try:
             with urlopen(request, timeout=60) as response:
                 body = response.read(max_bytes + 1)
@@ -36,26 +68,40 @@ def fetch(url, max_bytes=32 * 1024 * 1024):
                     raise ValueError(f"Response exceeds {max_bytes} bytes")
                 return body, response.headers
         except HTTPError as error:
-            if error.code not in (429, 500, 502, 503, 504) or attempt == 2:
+            if error.code not in (408, 429, 500, 502, 503, 504):
+                error.close()
                 raise
-        except URLError:
-            if attempt == 2:
+            retry_after = error.headers.get("Retry-After") if error.headers else None
+            last_error, reason = error, f"HTTP {error.code}"
+            error.close()
+        except (URLError, TimeoutError, ConnectionError, IncompleteRead) as error:
+            if isinstance(error, URLError) and isinstance(error.reason, ssl.SSLCertVerificationError):
                 raise
-        time.sleep(2 ** attempt)
-    raise RuntimeError("Unreachable download state")
+            last_error, reason = error, type(error).__name__
+        if attempt + 1 < max_attempts:
+            delay = retry_delay(attempt, retry_after)
+            print(f"Download {location}: {reason}; retry {attempt + 2}/{max_attempts} in {delay:g}s", flush=True)
+            time.sleep(delay)
+    raise DataDownloadError(
+        f"Remote source {location} is unavailable after {max_attempts} attempts ({reason}). "
+        "Retry prepare_data later; completed downloads and catalogue pages are preserved."
+    ) from last_error
 
 
-def viewer_page(c, root, offset, length=100):
+def viewer_page(c, root, offset, length=100, *, fresh_urls=True):
     cache = root / "cache" / f"wikiart_{offset}_{length}.json"
-    if cache.exists() and time.time() - cache.stat().st_mtime < 300:
-        response = read_json(cache)
-    else:
+    response = read_json(cache) if cache.exists() else None
+    if response is not None and response["revision"] != c["art"]["revision"]:
+        raise ValueError("WikiArt viewer revision differs from pinned revision; do not silently change the data")
+    # Labels and row IDs are stable at the pinned revision. Image links expire.
+    reusable = response is not None and (not fresh_urls or time.time() - cache.stat().st_mtime < 300)
+    if not reusable:
         query = urlencode({"dataset": c["art"]["dataset"], "config": "default", "split": "train", "offset": offset, "length": length})
         body, headers = fetch(f"{VIEWER}/rows?{query}")
         response = {"revision": headers.get("x-revision"), "payload": json.loads(body)}
+        if response["revision"] != c["art"]["revision"]:
+            raise ValueError("WikiArt viewer revision differs from pinned revision; do not silently change the data")
         write_json(cache, response)
-    if response["revision"] != c["art"]["revision"]:
-        raise ValueError("WikiArt viewer revision differs from pinned revision; do not silently change the data")
     return response["payload"]
 
 
@@ -141,7 +187,7 @@ def prepare_art(c, root):
     else:
         rows, labels = [], None
         for offset in range(0, c["art"]["scan_rows"], 100):
-            page = viewer_page(c, root, offset, min(100, c["art"]["scan_rows"] - offset))
+            page = viewer_page(c, root, offset, min(100, c["art"]["scan_rows"] - offset), fresh_urls=False)
             labels = {item["name"]: item["type"].get("names") for item in page["features"]}
             style_id = labels["style"].index(c["art"]["style"])
             rows.extend({"row_idx": entry["row_idx"], **{k: entry["row"][k] for k in ("artist", "genre", "style")}}
