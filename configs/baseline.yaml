@@ -1,0 +1,44 @@
+schema_version: 1
+resolution: 512
+num_inference_steps: 30
+guidance_scale: 7.5
+controlnet_conditioning_scale: 1.0
+ip_adapter_scale: 0.6
+scheduler: DDIM
+eta: 0.0
+seed: 42
+canny_low_threshold: 100
+canny_high_threshold: 200
+dtype: float16
+cpu_offload: true
+negative_prompt: "low quality, blurry, deformed"
+models:
+  sd:
+    repo: stable-diffusion-v1-5/stable-diffusion-v1-5
+    revision: 451f4fe16113bff5a5d2269ed5ad43b0592e9a14
+  controlnet:
+    repo: lllyasviel/control_v11p_sd15_canny
+    revision: 115a470d547982438f70198e353a921996e2e819
+  ip_adapter:
+    repo: h94/IP-Adapter
+    revision: 018e402774aeeddd60609b4ecdb7e298259dc729
+    subfolder: models
+    weight_name: ip-adapter_sd15.safetensors
+    image_encoder_subfolder: models/image_encoder
+  dino:
+    repo: facebook/dinov2-base
+    revision: f9e44c814b77203eaa57a6bdbbd535f21ede1415
+art:
+  dataset: huggan/wikiart
+  revision: d559852d2b232e0fcf195e775866964f0564f2b5
+  style: Impressionism
+  total: 75
+  references: 5
+  scan_rows: 1500
+  dedup_hamming: 2
+coco:
+  dataset: phiyodr/coco2017
+  revision: 036f3f8291db64d17faad9b09e59dd30bb65c4d7
+  count: 24
+metrics:
+  edge_tolerance_px: 2
