@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="510" height="170" preserveAspectRatio="xMinYMin meet" viewBox="0 0 510 170" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>Пайплайн SD 1.5, ControlNet Canny и IP-Adapter</title>
+	<desc>Контуры исходного фото, текст и художественный референс задают условия генерации.</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="510" height="170"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-170)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="0" y="115" width="145" height="28" rx="4" ry="4" style="stroke: rgb(41%,50%,59%); stroke-linecap: butt; stroke-width: 1; fill: rgb(92%,95%,98%); fill-rule: evenodd;"/>
+			<text x="35.94482421875" y="124" style="font-family: DejaVu Sans, sans-serif; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,248) scale(1,-1)">Фото → Canny</text>
+			<rect x="175" y="115" width="130" height="28" rx="4" ry="4" style="stroke: rgb(41%,50%,59%); stroke-linecap: butt; stroke-width: 1; fill: rgb(92%,95%,98%); fill-rule: evenodd;"/>
+			<text x="213.03955078125" y="124" style="font-family: DejaVu Sans, sans-serif; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,248) scale(1,-1)">ControlNet</text>
+			<rect x="0" y="70" width="145" height="28" rx="4" ry="4" style="stroke: rgb(41%,50%,59%); stroke-linecap: butt; stroke-width: 1; fill: rgb(92%,95%,98%); fill-rule: evenodd;"/>
+			<text x="39.55322265625" y="79" style="font-family: DejaVu Sans, sans-serif; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,158) scale(1,-1)">Текст → CLIP</text>
+			<rect x="0" y="25" width="145" height="28" rx="4" ry="4" style="stroke: rgb(41%,50%,59%); stroke-linecap: butt; stroke-width: 1; fill: rgb(92%,95%,98%); fill-rule: evenodd;"/>
+			<text x="22.40966796875" y="34" style="font-family: DejaVu Sans, sans-serif; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,68) scale(1,-1)">Стиль → CLIP vision</text>
+			<rect x="175" y="25" width="130" height="28" rx="4" ry="4" style="stroke: rgb(41%,50%,59%); stroke-linecap: butt; stroke-width: 1; fill: rgb(92%,95%,98%); fill-rule: evenodd;"/>
+			<text x="213.78173828125" y="34" style="font-family: DejaVu Sans, sans-serif; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,68) scale(1,-1)">IP-Adapter</text>
+			<rect x="355" y="70" width="150" height="28" rx="4" ry="4" style="stroke: rgb(41%,50%,59%); stroke-linecap: butt; stroke-width: 1; fill: rgb(92%,95%,98%); fill-rule: evenodd;"/>
+			<text x="396.13525390625" y="79" style="font-family: DejaVu Sans, sans-serif; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,158) scale(1,-1)">SD 1.5 / UNet</text>
+			<path d="M 145,129 L 175,129 Z" style="stroke: rgb(28%,38%,47%); stroke-linecap: butt; stroke-width: 1;"/>
+			<polygon points="175 129, 170 132, 170 126" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(28%,38%,47%); fill-rule: evenodd;"/>
+			<path d="M 305,129 L 355,90 Z" style="stroke: rgb(28%,38%,47%); stroke-linecap: butt; stroke-width: 1;"/>
+			<polygon points="355 90, 350 93, 350 87" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(28%,38%,47%); fill-rule: evenodd;"/>
+			<path d="M 145,84 L 355,84 Z" style="stroke: rgb(28%,38%,47%); stroke-linecap: butt; stroke-width: 1;"/>
+			<polygon points="355 84, 350 87, 350 81" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(28%,38%,47%); fill-rule: evenodd;"/>
+			<path d="M 145,39 L 175,39 Z" style="stroke: rgb(28%,38%,47%); stroke-linecap: butt; stroke-width: 1;"/>
+			<polygon points="175 39, 170 42, 170 36" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(28%,38%,47%); fill-rule: evenodd;"/>
+			<path d="M 305,39 L 355,77 Z" style="stroke: rgb(28%,38%,47%); stroke-linecap: butt; stroke-width: 1;"/>
+			<polygon points="355 77, 350 80, 350 74" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(28%,38%,47%); fill-rule: evenodd;"/>
+			<text x="377.8857421875" y="145" style="font-family: DejaVu Sans, sans-serif; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,290) scale(1,-1)">Начальный шум z_T</text>
+			<path d="M 430,136 L 430,102 Z" style="stroke: rgb(50%,50%,50%); stroke-linecap: butt; stroke-width: 1;"/>
+			<path d="M 430,70 L 430,42 Z" style="stroke: rgb(50%,50%,50%); stroke-linecap: butt; stroke-width: 1;"/>
+			<text x="385.732421875" y="25" style="font-family: DejaVu Sans, sans-serif; font-size: 10px;fill: rgb(0%,0%,0%); stroke:none;" transform="translate(0,50) scale(1,-1)">VAE → результат</text>
+		</g>
+	</g>
+</svg>

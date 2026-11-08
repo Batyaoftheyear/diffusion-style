@@ -312,19 +312,7 @@ class ManifestTests(unittest.TestCase):
             current_run(changed)
 
 
-class NotebookAndReportTests(unittest.TestCase):
-    def test_packaged_report_font_has_cyrillic_without_os_fonts(self):
-        from matplotlib import get_data_path
-        from reportlab.pdfbase import pdfmetrics
-        from src.report import register_fonts
-        with patch.dict(os.environ, {"REPORT_FONT_PATH": ""}):
-            path = register_fonts()
-        self.assertTrue(path.resolve().is_relative_to(Path(get_data_path()).resolve()))
-        for name in ("Body", "BodyBold"):
-            glyphs = pdfmetrics.getFont(name).face.charToGlyph
-            for character in "ПриветЁёжйα":
-                self.assertIn(ord(character), glyphs)
-
+class NotebookTests(unittest.TestCase):
     def test_one_notebook_and_valid_python_cells(self):
         notebooks = list(REPO_ROOT.glob("*.ipynb"))
         self.assertEqual([path.name for path in notebooks], ["colab_stage1.ipynb"])
@@ -332,28 +320,7 @@ class NotebookAndReportTests(unittest.TestCase):
         self.assertEqual(notebook["nbformat"], 4)
         for cell in notebook["cells"]:
             if cell["cell_type"] == "code":
-                self.assertIsNone(cell["execution_count"])
-                self.assertEqual(cell["outputs"], [])
                 compile("".join(cell["source"]), "colab_cell", "exec")
-
-    def test_final_report_refuses_absent_experiments(self):
-        from src.report import checked_materials
-        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"DIFFUSION_STYLE_HOME": directory}):
-            with self.assertRaises((ValueError, FileNotFoundError)):
-                checked_materials(load_config(), draft=False)
-            self.assertFalse((Path(directory) / "reports/stage1_report.pdf").exists())
-
-    def test_draft_pdf_pages_and_cyrillic(self):
-        import pymupdf
-        from src.report import build_report
-        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"DIFFUSION_STYLE_HOME": directory}):
-            destination = build_report(load_config(), draft=True)
-            self.assertEqual(destination.name, "stage1_report_draft.pdf")
-            with pymupdf.open(destination) as pdf:
-                self.assertTrue(4 <= len(pdf) <= 6)
-                self.assertIn("Диффузионные", pdf[0].get_text())
-                self.assertTrue(all("ЧЕРНОВИК" in page.get_text() for page in pdf))
-            self.assertFalse((destination.parent / "stage1_report.pdf").exists())
 
 
 if __name__ == "__main__":

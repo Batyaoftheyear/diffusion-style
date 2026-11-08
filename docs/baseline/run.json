@@ -1,0 +1,129 @@
+{
+  "config": {
+    "schema_version": 1,
+    "resolution": 512,
+    "num_inference_steps": 30,
+    "guidance_scale": 7.5,
+    "controlnet_conditioning_scale": 1.0,
+    "ip_adapter_scale": 0.6,
+    "scheduler": "DDIM",
+    "eta": 0.0,
+    "seed": 42,
+    "canny_low_threshold": 100,
+    "canny_high_threshold": 200,
+    "dtype": "float16",
+    "cpu_offload": true,
+    "negative_prompt": "low quality, blurry, deformed",
+    "models": {
+      "sd": {
+        "repo": "stable-diffusion-v1-5/stable-diffusion-v1-5",
+        "revision": "451f4fe16113bff5a5d2269ed5ad43b0592e9a14"
+      },
+      "controlnet": {
+        "repo": "lllyasviel/control_v11p_sd15_canny",
+        "revision": "115a470d547982438f70198e353a921996e2e819"
+      },
+      "ip_adapter": {
+        "repo": "h94/IP-Adapter",
+        "revision": "018e402774aeeddd60609b4ecdb7e298259dc729",
+        "subfolder": "models",
+        "weight_name": "ip-adapter_sd15.safetensors",
+        "image_encoder_subfolder": "models/image_encoder"
+      },
+      "dino": {
+        "repo": "facebook/dinov2-base",
+        "revision": "f9e44c814b77203eaa57a6bdbbd535f21ede1415"
+      }
+    },
+    "art": {
+      "dataset": "huggan/wikiart",
+      "revision": "d559852d2b232e0fcf195e775866964f0564f2b5",
+      "style": "Impressionism",
+      "total": 75,
+      "references": 5,
+      "scan_rows": 1500,
+      "dedup_hamming": 2
+    },
+    "coco": {
+      "dataset": "phiyodr/coco2017",
+      "revision": "036f3f8291db64d17faad9b09e59dd30bb65c4d7",
+      "count": 24
+    },
+    "metrics": {
+      "edge_tolerance_px": 2
+    }
+  },
+  "data_identity": {
+    "manifest.json": "a4e01f367236fe2ba0b0fc778586b953f26784a1a1df41a71ffb4426f4c0f9ba",
+    "art_manifest.jsonl": "3fd9077f4124bd2eda0ff8d2bdfc427dca0050e38f0a9449117262da671961f0",
+    "coco_manifest.jsonl": "24aaf05be3c72ef89f73a772a823550c338e004a2b22b5ed5d9f0565efe2ed78"
+  },
+  "environment": {
+    "python": "3.13.16",
+    "platform": "Linux",
+    "packages": {
+      "torch": "2.8.0+cu126",
+      "torchvision": "0.23.0+cu126",
+      "diffusers": "0.35.2",
+      "transformers": "4.57.1",
+      "accelerate": "1.10.1",
+      "numpy": "2.2.6",
+      "Pillow": "11.3.0",
+      "opencv-python-headless": "4.12.0.88",
+      "opencv-python": null,
+      "datasets": "4.2.0",
+      "huggingface-hub": "0.35.3",
+      "safetensors": "0.6.2"
+    },
+    "gpu": "Tesla T4",
+    "cuda": "12.6",
+    "cudnn": 91002
+  },
+  "generation_code_sha": "3f98d4a3f25422728d3ac6067bf50da56b099e59037b3315ff5eec08df319c36",
+  "latent_method": "torch.randn(cpu_generator, seed, float32), saved as unscaled N(0,1) numpy; cast to fp16 at pipeline input",
+  "run_id": "c66b0a9fe8ce4d583cfd",
+  "expected_images": 24,
+  "main_reference_id": "wikiart_00000798",
+  "model_load_seconds": 157.65254173799985,
+  "scheduler_config": {
+    "num_train_timesteps": 1000,
+    "beta_start": 0.00085,
+    "beta_end": 0.012,
+    "beta_schedule": "scaled_linear",
+    "trained_betas": null,
+    "clip_sample": false,
+    "set_alpha_to_one": false,
+    "steps_offset": 1,
+    "prediction_type": "epsilon",
+    "thresholding": false,
+    "dynamic_thresholding_ratio": 0.995,
+    "clip_sample_range": 1.0,
+    "sample_max_value": 1.0,
+    "timestep_spacing": "leading",
+    "rescale_betas_zero_snr": false,
+    "_use_default_values": [
+      "thresholding",
+      "dynamic_thresholding_ratio",
+      "sample_max_value",
+      "rescale_betas_zero_snr",
+      "prediction_type",
+      "clip_sample_range",
+      "timestep_spacing"
+    ],
+    "skip_prk_steps": true,
+    "_class_name": "DDIMScheduler",
+    "_diffusers_version": "0.6.0"
+  },
+  "completed_images": 23,
+  "complete": false,
+  "skipped_images": 1,
+  "processed_images": 24,
+  "processed_complete": true,
+  "skips": [
+    {
+      "annotation": "skips/coco_000000423971.json",
+      "sha256": "ac61f4b0b5570c83aea4bdda9d2836705226b14f28087a9528a796bdc8e17eea"
+    }
+  ],
+  "outcomes_id": "6211ab89ca92e591a8032337115d2f30ed8f2693de89e7d08ce071bdffd9a443"
+}
