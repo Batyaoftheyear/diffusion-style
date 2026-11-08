@@ -1,0 +1,114 @@
+{
+  "run_id": "c66b0a9fe8ce4d583cfd",
+  "evaluation_id": "6813ebc538863c65c13c",
+  "n": 23,
+  "metrics": {
+    "edge_precision": {
+      "mean": 0.7554952220165783,
+      "std": 0.21785440537841702,
+      "n": 23
+    },
+    "edge_recall": {
+      "mean": 0.8458430391689938,
+      "std": 0.08525687681187669,
+      "n": 23
+    },
+    "edge_f1": {
+      "mean": 0.7720746139579826,
+      "std": 0.14906352207337975,
+      "n": 23
+    },
+    "dino_cosine": {
+      "mean": 0.4816917670128013,
+      "std": 0.2244090146300288,
+      "n": 23
+    },
+    "generation_seconds": {
+      "mean": 13.485692705130393,
+      "std": 7.698069201172157,
+      "n": 23
+    },
+    "peak_allocated_mib": {
+      "mean": 3186.284561820652,
+      "std": 2.420458314773736,
+      "n": 23
+    },
+    "peak_reserved_mib": {
+      "mean": 3347.7391304347825,
+      "std": 2.1995328285869302,
+      "n": 23
+    }
+  },
+  "expected_images": 24,
+  "skipped": [
+    {
+      "photo_id": "coco_000000423971",
+      "reason": "safety_checker"
+    }
+  ],
+  "outcomes_id": "6211ab89ca92e591a8032337115d2f30ed8f2693de89e7d08ce071bdffd9a443",
+  "std_ddof": 1,
+  "scope": "Between-image variation at one shared seed, not noise robustness",
+  "protocol": {
+    "run_id": "c66b0a9fe8ce4d583cfd",
+    "model": {
+      "repo": "facebook/dinov2-base",
+      "revision": "f9e44c814b77203eaa57a6bdbbd535f21ede1415"
+    },
+    "metrics": {
+      "edge_tolerance_px": 2
+    },
+    "method": "DINOv2 last_hidden_state CLS, float32, L2 normalization, processor use_fast=False; edge many-to-many Chebyshev tolerance",
+    "environment": {
+      "python": "3.13.16",
+      "platform": "Linux",
+      "packages": {
+        "torch": "2.8.0+cu126",
+        "torchvision": "0.23.0+cu126",
+        "diffusers": "0.35.2",
+        "transformers": "4.57.1",
+        "accelerate": "1.10.1",
+        "numpy": "2.2.6",
+        "Pillow": "11.3.0",
+        "opencv-python-headless": "4.12.0.88",
+        "opencv-python": null,
+        "datasets": "4.2.0",
+        "huggingface-hub": "0.35.3",
+        "safetensors": "0.6.2"
+      },
+      "gpu": "Tesla T4",
+      "cuda": "12.6",
+      "cudnn": 91002
+    },
+    "metrics_code_sha": "b3e2dc7ef71b13050107fe8bceb7737a2cfffee86dfca08a8b74b44cd407a975",
+    "outcomes_id": "6211ab89ca92e591a8032337115d2f30ed8f2693de89e7d08ce071bdffd9a443",
+    "processor_config": {
+      "_processor_class": null,
+      "image_processor_type": "BitImageProcessor",
+      "do_resize": true,
+      "size": {
+        "shortest_edge": 256
+      },
+      "resample": 3,
+      "do_center_crop": true,
+      "crop_size": {
+        "height": 224,
+        "width": 224
+      },
+      "do_rescale": true,
+      "rescale_factor": 0.00392156862745098,
+      "do_normalize": true,
+      "image_mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "image_std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "do_convert_rgb": true
+    }
+  }
+}
