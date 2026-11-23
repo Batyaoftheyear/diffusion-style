@@ -16,7 +16,7 @@ DEFAULT_CACHE = Path(__file__).resolve().parents[1] / ".cache/bootstrap"
 
 
 def run_command(command, cwd=None):
-    """Передаёт stdout/stderr ячейке, сохраняя диагностический хвост ошибки."""
+    """Выводит stdout и stderr в ячейку; при ошибке сохраняет последние строки вывода."""
     command = [str(part) for part in command]
     tail = deque(maxlen=20)
     with subprocess.Popen(command, cwd=cwd, text=True, stdout=subprocess.PIPE,
@@ -46,7 +46,7 @@ def get_virtualenv(cache_dir=DEFAULT_CACHE):
 
 
 def ensure_environment(directory, cache_dir=DEFAULT_CACHE):
-    """Дополняет частичное окружение pip, не удаляя пользовательские файлы."""
+    """Проверяет окружение Python и при необходимости восстанавливает pip."""
     directory = Path(directory).absolute()
     if directory.is_symlink() or directory.resolve() in {Path(sys.prefix).resolve(), Path(sys.base_prefix).resolve()}:
         raise ValueError("The environment must be a separate directory, not the system interpreter")

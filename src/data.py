@@ -1,4 +1,4 @@
-"""Подготовка небольших выборок WikiArt и COCO, кэш и manifests."""
+"""Отбор и подготовка изображений WikiArt и COCO, кэширование и метаданные."""
 from collections import Counter
 from datetime import timezone
 from email.utils import parsedate_to_datetime

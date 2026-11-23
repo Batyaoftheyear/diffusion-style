@@ -1,4 +1,4 @@
-"""Завершение существующего прогона с явными пропусками, без генерации."""
+"""Проверка завершения прогона и учёт пропущенных результатов."""
 from datetime import datetime, timezone
 
 from .config import data_dir, fingerprint, safe_path

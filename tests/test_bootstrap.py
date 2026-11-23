@@ -1,4 +1,4 @@
-"""Диагностика subprocess и восстановление настоящего окружения без pip."""
+"""Проверка вывода команд и восстановления окружения Python."""
 from contextlib import redirect_stdout
 import io
 from pathlib import Path

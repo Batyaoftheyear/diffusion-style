@@ -1,4 +1,4 @@
-"""Проверить готовые результаты и явно отметить пропущенные фото без GPU."""
+"""Проверка сохранённых результатов и запись причин пропуска."""
 from _common import load_config, parser
 from src.run_status import finalize_run
 

@@ -1,4 +1,4 @@
-"""Расчёт метрик полного baseline."""
+"""Расчёт метрик сохранённых результатов baseline."""
 import json
 from _common import load_config, parser
 from src.metrics import evaluate

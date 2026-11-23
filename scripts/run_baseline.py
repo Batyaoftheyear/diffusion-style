@@ -1,4 +1,4 @@
-"""Реальный GPU baseline; --limit 2 запускает smoke test."""
+"""Генерация baseline; --limit ограничивает число фотографий."""
 from _common import load_config, parser
 from src.inference import run_baseline
 from src.run_status import reuse_finalized_run
